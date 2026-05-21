@@ -1,0 +1,48 @@
+module(
+    name = "rules_js_repro",
+    version = "0.0.1",
+)
+
+bazel_dep(name = "rules_nodejs", version = "6.7.4")
+bazel_dep(name = "aspect_rules_js", version = "3.1.2")
+
+#################################################################################
+# Load module extensions
+#################################################################################
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node")
+node.toolchain(node_version = "20.19.2")
+
+npm = use_extension("@aspect_rules_js//npm:extensions.bzl", "npm")
+npm.npm_translate_lock(
+    name = "npm",
+    # custom_postinstalls = {
+    #     "vite": "chmod -R a+X *",
+    #     "pngjs": "chmod -R a+X *",
+    #     "websocket-extensions": "chmod -R a+X *",
+    #     "pretty-format": "chmod -R a+X *",
+    #     "readdirp": "chmod -R a+X *",
+    #     "serve-static": "chmod -R a+X *",
+    #     "serialize-javascript": "chmod -R a+X *",
+    #     "supports-preserve-symlinks-flag": "chmod -R a+X *",
+    #     "strip-final-newline": "chmod -R a+X *",
+    #     "webpack-dev-server": "chmod -R a+X *",
+    #     "tapable": "chmod -R a+X *",
+    #     "statuses": "chmod -R a+X *",
+    #     "@nivo/legends": "chmod -R a+X *",
+    #     "@lingui/react": "chmod -R a+X *",
+    #     "license-webpack-plugin": "chmod -R a+X *",
+    #     "command-exists-promise": "chmod -R a+X *",
+    # },
+    data = [
+        "//frontend:package.json",
+    ],
+    lifecycle_hooks_exclude = [
+        "@swc/core",
+        "@tailwindcss/oxide",
+        "esbuild",
+    ],
+    npmrc = "//frontend:.npmrc",
+    pnpm_lock = "//frontend:pnpm-lock.yaml",
+)
+use_repo(npm, "npm")

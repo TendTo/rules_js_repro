@@ -1,0 +1,90 @@
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@npm//frontend:vite/package_json.bzl", vite_bin = "bin")
+
+exports_files([
+    ".npmrc",
+    "package.json",
+    "pnpm-lock.yaml",
+])
+
+npm_link_all_packages()
+
+FILE_DEPS = [
+    "index.html",
+    "package.json",
+    "pnpm-lock.yaml",
+    "tsconfig.app.json",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "vite.config.ts",
+] + glob([
+    "src/**",
+    "public/**",
+])
+
+BUILD_DEPS = [":node_modules/" + d for d in [
+    "@headlessui/react",
+    "@hookform/error-message",
+    "@hookform/resolvers",
+    "@radix-ui/react-accordion",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-label",
+    "@radix-ui/react-select",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-scroll-area",
+    "@tailwindcss/vite",
+    "class-variance-authority",
+    "clsx",
+    "lucide-react",
+    "mathjs",
+    "plotly.js",
+    "plotly.js-dist-min",
+    "react",
+    "react-dom",
+    "react-hook-form",
+    "react-icons",
+    "react-plotly.js",
+    "tailwind-merge",
+    "tailwindcss",
+    "vaul",
+    "zod",
+    "@eslint/js",
+    "@types/plotly.js",
+    "@types/react",
+    "@types/react-dom",
+    "@types/react-plotly.js",
+    "@vitejs/plugin-react-swc",
+    "eslint",
+    "eslint-plugin-react-hooks",
+    "eslint-plugin-react-refresh",
+    "globals",
+    "tw-animate-css",
+    "typescript",
+    "typescript-eslint",
+    "vite",
+    "vite-tsconfig-paths",
+]]
+
+vite_bin.vite(
+    name = "frontend",
+    srcs = FILE_DEPS + BUILD_DEPS,
+    args = ["build"],
+    chdir = package_name(),
+    out_dirs = ["dist"],
+    visibility = ["//visibility:public"],
+)
+
+vite_bin.vite_binary(
+    name = "dev",
+    chdir = package_name(),
+    data = FILE_DEPS + BUILD_DEPS,
+    # Under ibazel, let vite hot-reload changed files rather than restart it
+    tags = ["ibazel_notify_changes"],
+)
+
+filegroup(
+    name = "build",
+    srcs = ["dist"],
+    visibility = ["//visibility:public"],
+)
